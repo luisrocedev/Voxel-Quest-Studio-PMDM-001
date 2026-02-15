@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voxel Quest Studio · DAM2</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="crosshair"></div>
+
+  <section id="hud" class="panel">
+    <h1>Voxel Quest Studio</h1>
+    <div class="grid">
+      <span>Vida</span><strong id="hudHealth">100</strong>
+      <span>Puntuación</span><strong id="hudScore">0</strong>
+      <span>Cristales</span><strong id="hudCrystals">0</strong>
+      <span>Enemigos</span><strong id="hudEnemies">0</strong>
+      <span>Combo máximo</span><strong id="hudCombo">0</strong>
+      <span>Tiempo</span><strong id="hudTime">0s</strong>
+    </div>
+    <p>WASD mover · Espacio saltar · Click izq disparar · Click der construir</p>
+  </section>
+
+  <section id="rightPanel" class="panel">
+    <h2>Objetivo</h2>
+    <p>Sobrevive 90s y reúne 12 cristales. Los enemigos escalan con el tiempo.</p>
+
+    <h3>Top partidas</h3>
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th>Jugador</th><th>Score</th><th>Cristales</th><th>Tiempo</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </div>
+
+    <h3>Tu historial</h3>
+    <div class="tableWrap small">
+      <table>
+        <thead><tr><th>Resultado</th><th>Score</th><th>Tiempo</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="startOverlay" class="overlay visible">
+    <article class="card">
+      <h2>Actividad 001 · Crear un videojuego</h2>
+      <p>Base clase: juego 3D de bloques en Three.js (movimiento, gravedad, raycast y colisiones).</p>
+      <label>Nombre de jugador
+        <input id="playerName" maxlength="40" placeholder="Tu nick" />
+      </label>
+      <button id="startBtn">Iniciar partida</button>
+    </article>
+  </section>
+
+  <section id="endOverlay" class="overlay">
+    <article class="card">
+      <h2 id="endTitle">Fin de partida</h2>
+      <p id="endSummary"></p>
+      <button id="retryBtn">Jugar otra vez</button>
+    </article>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.min.js"></script>
+  <script src="/static/game.js"></script>
+</body>
+</html>
