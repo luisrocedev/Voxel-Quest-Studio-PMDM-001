@@ -253,6 +253,73 @@ def stats():
     )
 
 
+# ─── v2: Seed & Import ───────────────────────────────────
+
+import random as _rnd
+
+SEED_NAMES = ["AlphaWolf", "NovaStrike", "CrystalHunter", "VoxelKing", "PixelNinja"]
+
+
+@app.route("/api/seed", methods=["POST"])
+def seed_data():
+    """Inserta partidas demo para demostrar el leaderboard."""
+    inserted = 0
+    with db_connection() as conn:
+        for name in SEED_NAMES:
+            conn.execute(
+                "INSERT INTO players (name) VALUES (?) ON CONFLICT(name) DO UPDATE SET last_seen=CURRENT_TIMESTAMP",
+                (name,),
+            )
+            pid = conn.execute("SELECT id FROM players WHERE name=?", (name,)).fetchone()["id"]
+            score = _rnd.randint(120, 950)
+            crystals = _rnd.randint(3, 14)
+            survived = _rnd.randint(30, 100)
+            result = "victory" if survived >= 90 and crystals >= 12 else "defeat"
+            conn.execute(
+                """INSERT INTO game_sessions
+                   (player_id, mode, ended_at, result, score, crystals, enemies_defeated, survived_seconds, max_combo)
+                   VALUES (?, 'voxel_survival', CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?)""",
+                (pid, result, score, crystals, _rnd.randint(2, 18), survived, _rnd.randint(1, 6)),
+            )
+            inserted += 1
+    return jsonify({"ok": True, "inserted": inserted})
+
+
+@app.route("/api/import", methods=["POST"])
+def import_data():
+    """Re-inserta partidas desde un JSON exportado previamente."""
+    payload = request.get_json(silent=True) or {}
+    items = payload.get("leaderboard", [])
+    if not items:
+        return jsonify({"ok": False, "error": "Sin datos de leaderboard"}), 400
+
+    imported = 0
+    with db_connection() as conn:
+        for item in items:
+            name = str(item.get("player_name", "imported"))[:40]
+            conn.execute(
+                "INSERT INTO players (name) VALUES (?) ON CONFLICT(name) DO UPDATE SET last_seen=CURRENT_TIMESTAMP",
+                (name,),
+            )
+            pid = conn.execute("SELECT id FROM players WHERE name=?", (name,)).fetchone()["id"]
+            conn.execute(
+                """INSERT INTO game_sessions
+                   (player_id, mode, ended_at, result, score, crystals, enemies_defeated, survived_seconds, max_combo)
+                   VALUES (?, 'voxel_survival', CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?)""",
+                (
+                    pid,
+                    item.get("result", "defeat"),
+                    item.get("score", 0),
+                    item.get("crystals", 0),
+                    item.get("enemies_defeated", 0),
+                    item.get("survived_seconds", 0),
+                    item.get("max_combo", 0),
+                ),
+            )
+            imported += 1
+    return jsonify({"ok": True, "imported": imported})
+
+
 if __name__ == "__main__":
     init_db()
     app.run(host="127.0.0.1", port=5090, debug=True)

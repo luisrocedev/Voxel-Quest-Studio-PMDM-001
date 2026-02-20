@@ -19,6 +19,22 @@ const historyBody = document.getElementById('historyBody');
 const endTitle = document.getElementById('endTitle');
 const endSummary = document.getElementById('endSummary');
 
+/* v2 DOM refs */
+const damageFlash    = document.getElementById('damageFlash');
+const comboIndicator = document.getElementById('comboIndicator');
+const toastBox       = document.getElementById('toastBox');
+const healthFill     = document.getElementById('healthFill');
+const objCrystals    = document.getElementById('objCrystals');
+const objTime        = document.getElementById('objTime');
+const ekScore        = document.getElementById('ekScore');
+const ekCrystals     = document.getElementById('ekCrystals');
+const ekEnemies      = document.getElementById('ekEnemies');
+const ekCombo        = document.getElementById('ekCombo');
+const seedBtn        = document.getElementById('seedBtn');
+const exportBtn      = document.getElementById('exportBtn');
+const importBtn      = document.getElementById('importBtn');
+const importFile     = document.getElementById('importFile');
+
 const CONFIG = {
   WORLD_RADIUS: 34,
   PLAYER_SPEED: 9,
@@ -31,6 +47,36 @@ const CONFIG = {
   ENEMY_MAX: 18,
   BASE_ENEMY_SPEED: 1.8,
 };
+
+/* ─── v2 Utility functions ─── */
+function showDamageFlash() {
+  damageFlash.classList.add('active');
+  setTimeout(() => damageFlash.classList.remove('active'), 220);
+}
+
+function showCombo(n) {
+  comboIndicator.textContent = `×${n} COMBO`;
+  comboIndicator.classList.remove('show');
+  void comboIndicator.offsetWidth;          // reflow
+  comboIndicator.classList.add('show');
+}
+
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  toastBox.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function updateObjectiveKPIs() {
+  const cDone = state.crystals >= CONFIG.TARGET_CRYSTALS;
+  const tDone = state.elapsed  >= CONFIG.TARGET_SURVIVAL_SECONDS;
+  objCrystals.className = `obj-kpi${cDone ? ' done' : ''}`;
+  objCrystals.querySelector('.value').textContent = `${state.crystals} / ${CONFIG.TARGET_CRYSTALS}`;
+  objTime.className = `obj-kpi${tDone ? ' done' : ''}`;
+  objTime.querySelector('.value').textContent = `${Math.floor(state.elapsed)} / ${CONFIG.TARGET_SURVIVAL_SECONDS} s`;
+}
 
 const state = {
   running: false,
@@ -175,6 +221,14 @@ function updateHud() {
   hud.enemies.textContent = state.enemiesDefeated;
   hud.combo.textContent = state.maxCombo;
   hud.time.textContent = `${Math.floor(state.elapsed)}s`;
+
+  /* v2 health bar */
+  const pct = Math.max(0, state.health);
+  healthFill.style.width = `${pct}%`;
+  healthFill.className = 'health-fill' + (pct <= 25 ? ' danger' : pct <= 50 ? ' warning' : '');
+
+  /* v2 objective KPIs */
+  updateObjectiveKPIs();
 }
 
 function getGroundHeight(x, z) {
@@ -230,6 +284,7 @@ function updateCrystals(time) {
       state.crystals += 1;
       state.score += 25;
       sendEvent('collect_crystal', 25, { crystals: state.crystals });
+      showToast(`💎 Cristal recogido (${state.crystals})`, 'ok');
       setTimeout(createCrystal, CONFIG.CRYSTAL_RESPAWN_SECONDS * 1000);
     }
   }
@@ -259,6 +314,7 @@ function updateEnemies(delta) {
     if (distance < 1.5 && enemy.userData.damageCooldown <= 0) {
       state.health -= 8;
       enemy.userData.damageCooldown = 1.0;
+      showDamageFlash();
       sendEvent('damage_taken', 8, { health: Math.round(state.health) });
     }
   }
@@ -288,6 +344,8 @@ function shotEnemy() {
     if (index >= 0) enemies.splice(index, 1);
 
     sendEvent('enemy_defeated', 1, { combo: state.combo });
+    showToast(`💀 Enemigo eliminado (+${35 + (state.combo - 1) * 5})`, 'danger');
+    if (state.combo > 1) showCombo(state.combo);
   }
 }
 
@@ -318,6 +376,7 @@ function placeBuildBlock() {
 
   state.crystals -= 2;
   state.score += 8;
+  showToast('🧱 Bloque construido (−2 cristales)', 'info');
   sendEvent('build_block', 1, { x: targetX, y: targetY, z: targetZ });
 }
 
@@ -368,27 +427,40 @@ async function finishSession(result) {
 
 async function loadLeaderboard() {
   const data = await api('/api/leaderboard?limit=10');
-  const rows = (data.items || []).map((item) => `
+  const badges = ['gold', 'silver', 'bronze'];
+  const rows = (data.items || []).map((item, idx) => {
+    const badge = idx < 3
+      ? `<span class="rank-badge ${badges[idx]}">${idx + 1}</span>`
+      : `${idx + 1}`;
+    return `
     <tr>
+      <td>${badge}</td>
       <td>${item.player_name}</td>
       <td>${item.score}</td>
       <td>${item.crystals}</td>
       <td>${item.survived_seconds}s</td>
-    </tr>
-  `);
+    </tr>`;
+  });
   leaderboardBody.innerHTML = rows.join('');
 }
 
 async function loadHistory() {
   if (!state.playerId) return;
   const data = await api(`/api/player/${state.playerId}/history?limit=8`);
-  const rows = (data.items || []).map((item) => `
+  const rows = (data.items || []).map((item) => {
+    const r = item.result || '-';
+    const badge = r === 'victory'
+      ? '<span class="result-badge victory">🏆 Victoria</span>'
+      : r === 'defeat'
+        ? '<span class="result-badge defeat">💀 Derrota</span>'
+        : r;
+    return `
     <tr>
-      <td>${item.result || '-'}</td>
+      <td>${badge}</td>
       <td>${item.score}</td>
       <td>${item.survived_seconds}s</td>
-    </tr>
-  `);
+    </tr>`;
+  });
   historyBody.innerHTML = rows.join('');
 }
 
@@ -424,7 +496,13 @@ function endGame(result) {
     })
     .finally(() => {
       endTitle.textContent = result === 'victory' ? '¡Victoria táctica!' : 'Derrota';
-      endSummary.textContent = `Score ${Math.round(state.score)} · Cristales ${state.crystals} · Enemigos ${state.enemiesDefeated} · Tiempo ${Math.floor(state.elapsed)}s`;
+      endSummary.textContent = result === 'victory'
+        ? 'Has cumplido los objetivos de la misión'
+        : 'No has sobrevivido lo suficiente';
+      ekScore.textContent    = Math.round(state.score);
+      ekCrystals.textContent = state.crystals;
+      ekEnemies.textContent  = state.enemiesDefeated;
+      ekCombo.textContent    = state.maxCombo;
       endOverlay.classList.add('visible');
     });
 }
@@ -478,6 +556,7 @@ async function startGame() {
   startOverlay.classList.remove('visible');
   endOverlay.classList.remove('visible');
   controls.lock();
+  showToast('Partida iniciada — ¡buena suerte!', 'ok');
   sendEvent('session_ready', 1, { player: name });
 }
 
@@ -554,3 +633,59 @@ spawnInitialCrystals();
 loadLeaderboard().catch(() => {});
 updateHud();
 animate(performance.now());
+
+/* ─── v2 Seed / Export / Import ─── */
+
+async function seedData() {
+  try {
+    const res = await api('/api/seed', 'POST');
+    if (res.ok) {
+      showToast(`🌱 ${res.inserted} partidas demo insertadas`, 'ok');
+      await loadLeaderboard();
+    } else {
+      showToast(res.error || 'Error al insertar seed', 'danger');
+    }
+  } catch { showToast('Servidor no disponible', 'danger'); }
+}
+
+async function exportData() {
+  try {
+    const lb = await api('/api/leaderboard?limit=50');
+    const st = await api('/api/stats');
+    const blob = new Blob(
+      [JSON.stringify({ leaderboard: lb.items || [], stats: st }, null, 2)],
+      { type: 'application/json' }
+    );
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `voxel_quest_export_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('📥 Leaderboard exportado', 'info');
+  } catch { showToast('Error al exportar', 'danger'); }
+}
+
+async function importData() {
+  importFile.click();
+}
+
+importFile.addEventListener('change', async () => {
+  const file = importFile.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const json = JSON.parse(text);
+    const res = await api('/api/import', 'POST', json);
+    if (res.ok) {
+      showToast(`📤 ${res.imported} partidas importadas`, 'ok');
+      await loadLeaderboard();
+    } else {
+      showToast(res.error || 'Error al importar', 'danger');
+    }
+  } catch { showToast('Archivo JSON inválido', 'danger'); }
+  importFile.value = '';
+});
+
+seedBtn.addEventListener('click', seedData);
+exportBtn.addEventListener('click', exportData);
+importBtn.addEventListener('click', importData);

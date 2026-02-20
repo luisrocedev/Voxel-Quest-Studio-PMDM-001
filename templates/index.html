@@ -10,28 +10,37 @@
   <canvas id="gameCanvas"></canvas>
 
   <div id="crosshair"></div>
+  <div id="damageFlash"></div>
+  <div id="comboIndicator"></div>
+  <div id="toastBox"></div>
 
   <section id="hud" class="panel">
     <h1>Voxel Quest Studio</h1>
     <div class="grid">
       <span>Vida</span><strong id="hudHealth">100</strong>
+      <div class="health-bar"><div class="health-fill" id="healthFill"></div></div>
       <span>Puntuación</span><strong id="hudScore">0</strong>
       <span>Cristales</span><strong id="hudCrystals">0</strong>
       <span>Enemigos</span><strong id="hudEnemies">0</strong>
       <span>Combo máximo</span><strong id="hudCombo">0</strong>
       <span>Tiempo</span><strong id="hudTime">0s</strong>
     </div>
-    <p>WASD mover · Espacio saltar · Click izq disparar · Click der construir</p>
+    <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> mover · <kbd>Espacio</kbd> saltar · <kbd>Click izq</kbd> disparar · <kbd>Click der</kbd> construir</p>
   </section>
 
   <section id="rightPanel" class="panel">
     <h2>Objetivo</h2>
-    <p>Sobrevive 90s y reúne 12 cristales. Los enemigos escalan con el tiempo.</p>
+    <p>Sobrevive 90 s y reúne 12 cristales. Los enemigos escalan con el tiempo.</p>
+
+    <div class="obj-row">
+      <div class="obj-kpi" id="objCrystals"><div class="label">Cristales</div><div class="value">0 / 12</div></div>
+      <div class="obj-kpi" id="objTime"><div class="label">Supervivencia</div><div class="value">0 / 90 s</div></div>
+    </div>
 
     <h3>Top partidas</h3>
     <div class="tableWrap">
       <table>
-        <thead><tr><th>Jugador</th><th>Score</th><th>Cristales</th><th>Tiempo</th></tr></thead>
+        <thead><tr><th>#</th><th>Jugador</th><th>Score</th><th>Cristales</th><th>Tiempo</th></tr></thead>
         <tbody id="leaderboardBody"></tbody>
       </table>
     </div>
@@ -43,6 +52,13 @@
         <tbody id="historyBody"></tbody>
       </table>
     </div>
+
+    <div class="data-actions">
+      <button class="btn-seed" id="seedBtn">Seed</button>
+      <button class="btn-export" id="exportBtn">Exportar</button>
+      <button class="btn-import" id="importBtn">Importar</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" hidden />
   </section>
 
   <section id="startOverlay" class="overlay visible">
@@ -60,6 +76,12 @@
     <article class="card">
       <h2 id="endTitle">Fin de partida</h2>
       <p id="endSummary"></p>
+      <div class="ek-grid">
+        <div class="ek-card"><div class="ek-value" id="ekScore">0</div><div class="ek-label">Puntuación</div></div>
+        <div class="ek-card"><div class="ek-value" id="ekCrystals">0</div><div class="ek-label">Cristales</div></div>
+        <div class="ek-card"><div class="ek-value" id="ekEnemies">0</div><div class="ek-label">Enemigos</div></div>
+        <div class="ek-card"><div class="ek-value" id="ekCombo">0</div><div class="ek-label">Combo máx</div></div>
+      </div>
       <button id="retryBtn">Jugar otra vez</button>
     </article>
   </section>
