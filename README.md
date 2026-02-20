@@ -10,16 +10,16 @@
 
 ## Qué incluye
 
-| Capa | Tecnología | Descripción |
-|------|-----------|-------------|
-| **Motor 3D** | Three.js r128 + WebGL | Renderizado, sombras PCF, niebla |
-| **Controles FPS** | PointerLockControls | WASD + ratón, gravedad y salto |
-| **Mundo procedural** | Terreno voxel (ondas sinusoidales) | ~4600 bloques, 3 tipos de material |
-| **IA Enemigos** | Pathfinding simple + escalado temporal | Hasta 18 enemigos concurrentes |
-| **Combate** | Raycaster | Disparo click izq, combo × kills |
-| **Construcción** | Raycast + recursos | Click derecho, consume 2 cristales |
-| **Backend** | Flask 3.0 + SQLite | API REST, sesiones, telemetría |
-| **Persistencia** | SQLite3 | Jugadores, sesiones, eventos, leaderboard |
+| Capa                 | Tecnología                             | Descripción                               |
+| -------------------- | -------------------------------------- | ----------------------------------------- |
+| **Motor 3D**         | Three.js r128 + WebGL                  | Renderizado, sombras PCF, niebla          |
+| **Controles FPS**    | PointerLockControls                    | WASD + ratón, gravedad y salto            |
+| **Mundo procedural** | Terreno voxel (ondas sinusoidales)     | ~4600 bloques, 3 tipos de material        |
+| **IA Enemigos**      | Pathfinding simple + escalado temporal | Hasta 18 enemigos concurrentes            |
+| **Combate**          | Raycaster                              | Disparo click izq, combo × kills          |
+| **Construcción**     | Raycast + recursos                     | Click derecho, consume 2 cristales        |
+| **Backend**          | Flask 3.0 + SQLite                     | API REST, sesiones, telemetría            |
+| **Persistencia**     | SQLite3                                | Jugadores, sesiones, eventos, leaderboard |
 
 ## Ejecutar
 
@@ -34,13 +34,13 @@ Abrir: **http://127.0.0.1:5090**
 
 ## Controles
 
-| Tecla | Acción |
-|-------|--------|
-| `WASD` | Mover |
-| `Espacio` | Saltar |
-| `Ratón` | Mirar (Pointer Lock) |
-| `Click izquierdo` | Disparar enemigo |
-| `Click derecho` | Construir bloque (−2 cristales) |
+| Tecla             | Acción                          |
+| ----------------- | ------------------------------- |
+| `WASD`            | Mover                           |
+| `Espacio`         | Saltar                          |
+| `Ratón`           | Mirar (Pointer Lock)            |
+| `Click izquierdo` | Disparar enemigo                |
+| `Click derecho`   | Construir bloque (−2 cristales) |
 
 ## Objetivo de partida
 
@@ -49,18 +49,18 @@ Los enemigos escalan en cantidad y velocidad con el tiempo transcurrido.
 
 ## API REST
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `POST` | `/api/player/register` | Registra/recupera jugador |
-| `POST` | `/api/session/start` | Inicia sesión de partida |
-| `POST` | `/api/session/event` | Registra evento de telemetría |
-| `POST` | `/api/session/end` | Finaliza sesión con métricas |
-| `GET` | `/api/leaderboard` | Top N partidas |
-| `GET` | `/api/player/<id>/history` | Historial del jugador |
-| `GET` | `/api/stats` | Estadísticas globales |
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/seed` | Inserta 5 partidas demo |
-| `POST` | `/api/import` | Importa partidas desde JSON |
+| Método | Ruta                       | Descripción                   |
+| ------ | -------------------------- | ----------------------------- |
+| `POST` | `/api/player/register`     | Registra/recupera jugador     |
+| `POST` | `/api/session/start`       | Inicia sesión de partida      |
+| `POST` | `/api/session/event`       | Registra evento de telemetría |
+| `POST` | `/api/session/end`         | Finaliza sesión con métricas  |
+| `GET`  | `/api/leaderboard`         | Top N partidas                |
+| `GET`  | `/api/player/<id>/history` | Historial del jugador         |
+| `GET`  | `/api/stats`               | Estadísticas globales         |
+| `GET`  | `/api/health`              | Health check                  |
+| `POST` | `/api/seed`                | Inserta 5 partidas demo       |
+| `POST` | `/api/import`              | Importa partidas desde JSON   |
 
 ## Estructura
 

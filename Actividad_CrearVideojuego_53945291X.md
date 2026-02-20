@@ -44,8 +44,10 @@ Se respeta completamente la temática base: **mundo 3D de bloques (voxel) con co
   --gold: #ffd700;
   --silver: #c0c0c0;
   --bronze: #cd7f32;
-  --r-sm: 8px; --r-md: 12px; --r-lg: 14px;
-  --shadow-panel: 0 12px 30px rgba(0,0,0,0.35);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --shadow-panel: 0 12px 30px rgba(0, 0, 0, 0.35);
   --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -56,17 +58,24 @@ Se respeta completamente la temática base: **mundo 3D de bloques (voxel) con co
 ```css
 .health-bar {
   height: 8px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 4px;
   overflow: hidden;
 }
 .health-fill {
   height: 100%;
   background: var(--ok);
-  transition: width var(--t-normal), background var(--t-normal);
+  transition:
+    width var(--t-normal),
+    background var(--t-normal);
 }
-.health-fill.warning { background: var(--warning); }
-.health-fill.danger  { background: var(--danger); animation: pulse 0.8s infinite; }
+.health-fill.warning {
+  background: var(--warning);
+}
+.health-fill.danger {
+  background: var(--danger);
+  animation: pulse 0.8s infinite;
+}
 ```
 
 ### 2.4 Flash de daño (vignette)
@@ -75,13 +84,19 @@ Se respeta completamente la temática base: **mundo 3D de bloques (voxel) con co
 #damageFlash {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(255,50,50,0.45) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(255, 50, 50, 0.45) 100%
+  );
   pointer-events: none;
   opacity: 0;
   z-index: 9;
   transition: opacity 0.15s;
 }
-#damageFlash.active { opacity: 1; }
+#damageFlash.active {
+  opacity: 1;
+}
 ```
 
 ### 2.5 Combo flotante y toasts
@@ -129,8 +144,10 @@ function generateWorld() {
     for (let z = -CONFIG.WORLD_RADIUS; z <= CONFIG.WORLD_RADIUS; z += 1) {
       const y = terrainHeightAt(x, z);
       const color = y > 4 ? 0x8a8f98 : y > 2 ? 0x5a8d4f : 0x907248;
-      const block = new THREE.Mesh(blockGeo,
-        new THREE.MeshStandardMaterial({ color, roughness: 0.95 }));
+      const block = new THREE.Mesh(
+        blockGeo,
+        new THREE.MeshStandardMaterial({ color, roughness: 0.95 }),
+      );
       block.position.set(x + 0.5, y + 0.5, z + 0.5);
       block.castShadow = true;
       scene.add(block);
@@ -158,7 +175,9 @@ function applyMovement(delta) {
   if (pos.y < groundY) {
     pos.y = groundY;
     state.velocityY = 0;
-    if (state.keys.Space) { state.velocityY = CONFIG.JUMP_FORCE; }
+    if (state.keys.Space) {
+      state.velocityY = CONFIG.JUMP_FORCE;
+    }
   }
 }
 ```
@@ -169,7 +188,7 @@ function applyMovement(delta) {
 function createEnemy() {
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.9, 1.3, 0.9),
-    new THREE.MeshStandardMaterial({ color: 0xd54343, emissive: 0x4d0f0f })
+    new THREE.MeshStandardMaterial({ color: 0xd54343, emissive: 0x4d0f0f }),
   );
   cube.userData.hp = 3;
   cube.userData.speed = CONFIG.BASE_ENEMY_SPEED + Math.random() * 0.9;
@@ -180,8 +199,10 @@ function createEnemy() {
 function updateEnemies(delta) {
   for (const enemy of enemies) {
     const dir = new THREE.Vector3(
-      playerPos.x - enemy.position.x, 0,
-      playerPos.z - enemy.position.z).normalize();
+      playerPos.x - enemy.position.x,
+      0,
+      playerPos.z - enemy.position.z,
+    ).normalize();
     enemy.position.x += dir.x * enemy.userData.speed * delta;
     enemy.position.z += dir.z * enemy.userData.speed * delta;
 
@@ -195,7 +216,10 @@ function updateEnemies(delta) {
 }
 
 // Escalado dinámico de enemigos máximos
-const dynamicEnemyMax = Math.min(CONFIG.ENEMY_MAX, 6 + Math.floor(state.elapsed / 10));
+const dynamicEnemyMax = Math.min(
+  CONFIG.ENEMY_MAX,
+  6 + Math.floor(state.elapsed / 10),
+);
 ```
 
 #### Combate por raycast
@@ -216,7 +240,7 @@ function shotEnemy() {
     state.enemiesDefeated += 1;
     state.score += 35 + (state.combo - 1) * 5;
     scene.remove(enemy);
-    showToast(`💀 Enemigo eliminado`, 'danger');
+    showToast(`💀 Enemigo eliminado`, "danger");
     if (state.combo > 1) showCombo(state.combo);
   }
 }
@@ -234,13 +258,13 @@ function placeBuildBlock() {
   const targetY = getGroundHeight(targetX, targetZ);
   const block = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({ color: 0x8f6c41 })
+    new THREE.MeshStandardMaterial({ color: 0x8f6c41 }),
   );
   block.position.set(targetX + 0.5, targetY + 0.5, targetZ + 0.5);
   scene.add(block);
   buildBlocks.set(k, block);
   state.crystals -= 2;
-  showToast('🧱 Bloque construido (−2 cristales)', 'info');
+  showToast("🧱 Bloque construido (−2 cristales)", "info");
 }
 ```
 
@@ -248,29 +272,29 @@ function placeBuildBlock() {
 
 ```javascript
 function showDamageFlash() {
-  damageFlash.classList.add('active');
-  setTimeout(() => damageFlash.classList.remove('active'), 220);
+  damageFlash.classList.add("active");
+  setTimeout(() => damageFlash.classList.remove("active"), 220);
 }
 
 function showCombo(n) {
   comboIndicator.textContent = `×${n} COMBO`;
-  comboIndicator.classList.remove('show');
-  void comboIndicator.offsetWidth;          // reflow
-  comboIndicator.classList.add('show');
+  comboIndicator.classList.remove("show");
+  void comboIndicator.offsetWidth; // reflow
+  comboIndicator.classList.add("show");
 }
 
-function showToast(msg, type = 'info') {
-  const el = document.createElement('div');
+function showToast(msg, type = "info") {
+  const el = document.createElement("div");
   el.className = `toast ${type}`;
   el.textContent = msg;
   toastBox.appendChild(el);
-  el.addEventListener('animationend', () => el.remove());
+  el.addEventListener("animationend", () => el.remove());
 }
 
 function updateObjectiveKPIs() {
   const cDone = state.crystals >= CONFIG.TARGET_CRYSTALS;
-  objCrystals.className = `obj-kpi${cDone ? ' done' : ''}`;
-  objCrystals.querySelector('.value').textContent =
+  objCrystals.className = `obj-kpi${cDone ? " done" : ""}`;
+  objCrystals.querySelector(".value").textContent =
     `${state.crystals} / ${CONFIG.TARGET_CRYSTALS}`;
 }
 ```
@@ -279,20 +303,21 @@ function updateObjectiveKPIs() {
 
 ```javascript
 async function seedData() {
-  const res = await api('/api/seed', 'POST');
+  const res = await api("/api/seed", "POST");
   if (res.ok) {
-    showToast(`🌱 ${res.inserted} partidas demo insertadas`, 'ok');
+    showToast(`🌱 ${res.inserted} partidas demo insertadas`, "ok");
     await loadLeaderboard();
   }
 }
 
 async function exportData() {
-  const lb = await api('/api/leaderboard?limit=50');
-  const st = await api('/api/stats');
+  const lb = await api("/api/leaderboard?limit=50");
+  const st = await api("/api/stats");
   const blob = new Blob(
     [JSON.stringify({ leaderboard: lb.items || [], stats: st }, null, 2)],
-    { type: 'application/json' });
-  const a = document.createElement('a');
+    { type: "application/json" },
+  );
+  const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `voxel_quest_export_${Date.now()}.json`;
   a.click();
@@ -389,12 +414,12 @@ def seed_data():
 
 ## 4) Cumplimiento de rúbrica
 
-| Criterio | Evidencia |
-|----------|-----------|
-| **Parte de ejercicio de clase** | Ejercicios 010-bloques a 017-colisión suavizada de Three.js |
-| **Cambios visuales extensos** | Design System v2 completo (30+ tokens CSS), health bar, flash de daño, combo flotante, toasts, KPIs, rank/result badges, 6 @keyframes, responsive 3 breakpoints |
+| Criterio                          | Evidencia                                                                                                                                                       |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Parte de ejercicio de clase**   | Ejercicios 010-bloques a 017-colisión suavizada de Three.js                                                                                                     |
+| **Cambios visuales extensos**     | Design System v2 completo (30+ tokens CSS), health bar, flash de daño, combo flotante, toasts, KPIs, rank/result badges, 6 @keyframes, responsive 3 breakpoints |
 | **Cambios funcionales de calado** | Motor 3D completo (mundo procedural, IA enemigos, raycast combat, construcción), persistencia SQLite con 3 tablas, API REST de 10 endpoints, seed/export/import |
-| **Nivel de 2.º curso** | Arquitectura cliente-servidor full-stack, telemetría granular, patrón async/await para API calls, state machine de partida |
+| **Nivel de 2.º curso**            | Arquitectura cliente-servidor full-stack, telemetría granular, patrón async/await para API calls, state machine de partida                                      |
 
 ---
 
@@ -404,33 +429,33 @@ def seed_data():
 
 **Contenido del proyecto:**
 
-| Archivo | Descripción |
-|---------|-------------|
-| `app.py` | API Flask + SQLite + servidor web (326 líneas) |
-| `templates/index.html` | Shell HTML con HUD, overlays y paneles |
-| `static/game.js` | Motor Three.js completo del videojuego (692 líneas) |
-| `static/styles.css` | Design System v2 completo (387 líneas) |
-| `requirements.txt` | Dependencia Flask>=3.0.0 |
-| `README.md` | Documentación del proyecto |
-| `docs/Actividad_CrearVideojuego_53945291X.md` | Justificación técnica breve |
+| Archivo                                       | Descripción                                         |
+| --------------------------------------------- | --------------------------------------------------- |
+| `app.py`                                      | API Flask + SQLite + servidor web (326 líneas)      |
+| `templates/index.html`                        | Shell HTML con HUD, overlays y paneles              |
+| `static/game.js`                              | Motor Three.js completo del videojuego (692 líneas) |
+| `static/styles.css`                           | Design System v2 completo (387 líneas)              |
+| `requirements.txt`                            | Dependencia Flask>=3.0.0                            |
+| `README.md`                                   | Documentación del proyecto                          |
+| `docs/Actividad_CrearVideojuego_53945291X.md` | Justificación técnica breve                         |
 
 ---
 
 ## Anexo — 14 mejoras Design System v2
 
-| # | Mejora | Archivo | Descripción |
-|---|--------|---------|-------------|
-| 1 | Tokens CSS | `styles.css` | 30+ custom properties (palette, radii, shadows, typography, transitions) |
-| 2 | Barra de salud | `styles.css` + `game.js` | Color dinámico verde→ámbar→rojo con animación pulse |
-| 3 | Flash de daño | `styles.css` + `game.js` | Vignette radial-gradient roja al recibir golpe |
-| 4 | Combo flotante | `styles.css` + `game.js` | Texto `×N COMBO` con keyframe comboFloat |
-| 5 | Toasts contextuales | `styles.css` + `game.js` | 4 tipos (ok/info/warning/danger) con animationend auto-remove |
-| 6 | KPIs de objetivo | `styles.css` + `game.js` | Progreso cristales y supervivencia en tiempo real |
-| 7 | KPI cards fin partida | `styles.css` + `game.js` | 4 tarjetas con score, cristales, enemigos y combo |
-| 8 | Rank badges | `styles.css` + `game.js` | Insignias oro/plata/bronce en top 3 del leaderboard |
-| 9 | Result badges | `styles.css` + `game.js` | Victoria/derrota con estilo en historial |
-| 10 | Seed demo | `game.js` + `app.py` | Inserta 5 jugadores ficticios con stats aleatorios |
-| 11 | Exportar JSON | `game.js` | Descarga leaderboard + stats como archivo .json |
-| 12 | Importar JSON | `game.js` + `app.py` | Carga partidas desde archivo JSON exportado |
-| 13 | Responsive | `styles.css` | 3 breakpoints (1000/760/480 px) con colapso progresivo |
-| 14 | Animaciones | `styles.css` | 6 @keyframes: fadeIn, scaleIn, toastUp, comboFloat, pulse, shake |
+| #   | Mejora                | Archivo                  | Descripción                                                              |
+| --- | --------------------- | ------------------------ | ------------------------------------------------------------------------ |
+| 1   | Tokens CSS            | `styles.css`             | 30+ custom properties (palette, radii, shadows, typography, transitions) |
+| 2   | Barra de salud        | `styles.css` + `game.js` | Color dinámico verde→ámbar→rojo con animación pulse                      |
+| 3   | Flash de daño         | `styles.css` + `game.js` | Vignette radial-gradient roja al recibir golpe                           |
+| 4   | Combo flotante        | `styles.css` + `game.js` | Texto `×N COMBO` con keyframe comboFloat                                 |
+| 5   | Toasts contextuales   | `styles.css` + `game.js` | 4 tipos (ok/info/warning/danger) con animationend auto-remove            |
+| 6   | KPIs de objetivo      | `styles.css` + `game.js` | Progreso cristales y supervivencia en tiempo real                        |
+| 7   | KPI cards fin partida | `styles.css` + `game.js` | 4 tarjetas con score, cristales, enemigos y combo                        |
+| 8   | Rank badges           | `styles.css` + `game.js` | Insignias oro/plata/bronce en top 3 del leaderboard                      |
+| 9   | Result badges         | `styles.css` + `game.js` | Victoria/derrota con estilo en historial                                 |
+| 10  | Seed demo             | `game.js` + `app.py`     | Inserta 5 jugadores ficticios con stats aleatorios                       |
+| 11  | Exportar JSON         | `game.js`                | Descarga leaderboard + stats como archivo .json                          |
+| 12  | Importar JSON         | `game.js` + `app.py`     | Carga partidas desde archivo JSON exportado                              |
+| 13  | Responsive            | `styles.css`             | 3 breakpoints (1000/760/480 px) con colapso progresivo                   |
+| 14  | Animaciones           | `styles.css`             | 6 @keyframes: fadeIn, scaleIn, toastUp, comboFloat, pulse, shake         |

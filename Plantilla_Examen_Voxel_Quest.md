@@ -30,7 +30,12 @@
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87b5ff);
 scene.fog = new THREE.Fog(0x87b5ff, 30, 180);
-const camera = new THREE.PerspectiveCamera(74, window.innerWidth / window.innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(
+  74,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  500,
+);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.shadowMap.enabled = true;
 ```
@@ -77,7 +82,9 @@ pos.y += state.velocityY * delta;
 if (pos.y < groundY) {
   pos.y = groundY;
   state.velocityY = 0;
-  if (state.keys.Space) { state.velocityY = CONFIG.JUMP_FORCE; }
+  if (state.keys.Space) {
+    state.velocityY = CONFIG.JUMP_FORCE;
+  }
 }
 ```
 
@@ -96,8 +103,8 @@ if (orb.position.distanceTo(playerPos) < 1.1) {
   crystals.splice(i, 1);
   state.crystals += 1;
   state.score += 25;
-  sendEvent('collect_crystal', 25, { crystals: state.crystals });
-  showToast(`💎 Cristal recogido (${state.crystals})`, 'ok');
+  sendEvent("collect_crystal", 25, { crystals: state.crystals });
+  showToast(`💎 Cristal recogido (${state.crystals})`, "ok");
   setTimeout(createCrystal, CONFIG.CRYSTAL_RESPAWN_SECONDS * 1000);
 }
 ```
@@ -116,12 +123,17 @@ if (orb.position.distanceTo(playerPos) < 1.1) {
 ```javascript
 // Persecución
 const dir = new THREE.Vector3(
-  playerPos.x - enemy.position.x, 0,
-  playerPos.z - enemy.position.z).normalize();
+  playerPos.x - enemy.position.x,
+  0,
+  playerPos.z - enemy.position.z,
+).normalize();
 enemy.position.x += dir.x * enemy.userData.speed * delta;
 
 // Escalado
-const dynamicEnemyMax = Math.min(CONFIG.ENEMY_MAX, 6 + Math.floor(state.elapsed / 10));
+const dynamicEnemyMax = Math.min(
+  CONFIG.ENEMY_MAX,
+  6 + Math.floor(state.elapsed / 10),
+);
 ```
 
 ---
@@ -182,10 +194,12 @@ state.score += 8;
 - `endGame(result)` → `finishSession()` + actualizar leaderboard/historial + mostrar overlay
 
 ```javascript
-if (state.health <= 0) endGame('defeat');
-if (state.elapsed >= CONFIG.TARGET_SURVIVAL_SECONDS
-    && state.crystals >= CONFIG.TARGET_CRYSTALS) {
-  endGame('victory');
+if (state.health <= 0) endGame("defeat");
+if (
+  state.elapsed >= CONFIG.TARGET_SURVIVAL_SECONDS &&
+  state.crystals >= CONFIG.TARGET_CRYSTALS
+) {
+  endGame("victory");
 }
 ```
 
@@ -195,11 +209,11 @@ if (state.elapsed >= CONFIG.TARGET_SURVIVAL_SECONDS
 
 ### Esquema (3 tablas)
 
-| Tabla | Columnas clave | FK |
-|-------|---------------|-----|
-| `players` | id, name (UNIQUE), created_at, last_seen | — |
-| `game_sessions` | id, player_id, mode, result, score, crystals, enemies_defeated, survived_seconds, max_combo | → players(id) |
-| `game_events` | id, session_id, event_type, event_value, payload_json | → game_sessions(id) |
+| Tabla           | Columnas clave                                                                              | FK                  |
+| --------------- | ------------------------------------------------------------------------------------------- | ------------------- |
+| `players`       | id, name (UNIQUE), created_at, last_seen                                                    | —                   |
+| `game_sessions` | id, player_id, mode, result, score, crystals, enemies_defeated, survived_seconds, max_combo | → players(id)       |
+| `game_events`   | id, session_id, event_type, event_value, payload_json                                       | → game_sessions(id) |
 
 ### Conexión + init
 
@@ -218,18 +232,18 @@ def init_db():
 
 ### API REST — 10 endpoints
 
-| # | Método | Ruta | Función |
-|---|--------|------|---------|
-| 1 | POST | `/api/player/register` | INSERT ... ON CONFLICT(name) DO UPDATE |
-| 2 | POST | `/api/session/start` | INSERT game_sessions, devuelve session_id |
-| 3 | POST | `/api/session/event` | INSERT game_events (telemetría) |
-| 4 | POST | `/api/session/end` | UPDATE game_sessions con métricas finales |
-| 5 | GET | `/api/leaderboard` | SELECT JOIN ORDER BY score DESC LIMIT ? |
-| 6 | GET | `/api/player/<id>/history` | SELECT sesiones WHERE player_id ORDER BY id DESC |
-| 7 | GET | `/api/stats` | COUNT(*) de players, sessions, events |
-| 8 | GET | `/api/health` | Health check → `{"ok": true}` |
-| 9 | POST | `/api/seed` | 5 jugadores demo con randint para stats |
-| 10 | POST | `/api/import` | Re-inserta items de JSON exportado |
+| #   | Método | Ruta                       | Función                                          |
+| --- | ------ | -------------------------- | ------------------------------------------------ |
+| 1   | POST   | `/api/player/register`     | INSERT ... ON CONFLICT(name) DO UPDATE           |
+| 2   | POST   | `/api/session/start`       | INSERT game_sessions, devuelve session_id        |
+| 3   | POST   | `/api/session/event`       | INSERT game_events (telemetría)                  |
+| 4   | POST   | `/api/session/end`         | UPDATE game_sessions con métricas finales        |
+| 5   | GET    | `/api/leaderboard`         | SELECT JOIN ORDER BY score DESC LIMIT ?          |
+| 6   | GET    | `/api/player/<id>/history` | SELECT sesiones WHERE player_id ORDER BY id DESC |
+| 7   | GET    | `/api/stats`               | COUNT(\*) de players, sessions, events           |
+| 8   | GET    | `/api/health`              | Health check → `{"ok": true}`                    |
+| 9   | POST   | `/api/seed`                | 5 jugadores demo con randint para stats          |
+| 10  | POST   | `/api/import`              | Re-inserta items de JSON exportado               |
 
 ### Registro de jugador (UPSERT)
 
@@ -264,8 +278,8 @@ rows = conn.execute("""
 
 ```javascript
 function showDamageFlash() {
-  damageFlash.classList.add('active');
-  setTimeout(() => damageFlash.classList.remove('active'), 220);
+  damageFlash.classList.add("active");
+  setTimeout(() => damageFlash.classList.remove("active"), 220);
 }
 ```
 
@@ -276,9 +290,9 @@ function showDamageFlash() {
 ```javascript
 function showCombo(n) {
   comboIndicator.textContent = `×${n} COMBO`;
-  comboIndicator.classList.remove('show');
-  void comboIndicator.offsetWidth;   // forzar reflow para reiniciar animación
-  comboIndicator.classList.add('show');
+  comboIndicator.classList.remove("show");
+  void comboIndicator.offsetWidth; // forzar reflow para reiniciar animación
+  comboIndicator.classList.add("show");
 }
 ```
 
@@ -287,12 +301,12 @@ function showCombo(n) {
 ### showToast(msg, type)
 
 ```javascript
-function showToast(msg, type = 'info') {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;     // ok | info | warning | danger
+function showToast(msg, type = "info") {
+  const el = document.createElement("div");
+  el.className = `toast ${type}`; // ok | info | warning | danger
   el.textContent = msg;
   toastBox.appendChild(el);
-  el.addEventListener('animationend', () => el.remove());
+  el.addEventListener("animationend", () => el.remove());
 }
 ```
 
@@ -304,9 +318,9 @@ function showToast(msg, type = 'info') {
 ```javascript
 function updateObjectiveKPIs() {
   const cDone = state.crystals >= CONFIG.TARGET_CRYSTALS;
-  const tDone = state.elapsed  >= CONFIG.TARGET_SURVIVAL_SECONDS;
-  objCrystals.className = `obj-kpi${cDone ? ' done' : ''}`;
-  objCrystals.querySelector('.value').textContent =
+  const tDone = state.elapsed >= CONFIG.TARGET_SURVIVAL_SECONDS;
+  objCrystals.className = `obj-kpi${cDone ? " done" : ""}`;
+  objCrystals.querySelector(".value").textContent =
     `${state.crystals} / ${CONFIG.TARGET_CRYSTALS}`;
 }
 ```
@@ -316,8 +330,8 @@ function updateObjectiveKPIs() {
 ```javascript
 const pct = Math.max(0, state.health);
 healthFill.style.width = `${pct}%`;
-healthFill.className = 'health-fill'
-  + (pct <= 25 ? ' danger' : pct <= 50 ? ' warning' : '');
+healthFill.className =
+  "health-fill" + (pct <= 25 ? " danger" : pct <= 50 ? " warning" : "");
 ```
 
 - `danger` (≤25%) → rojo + pulse | `warning` (≤50%) → ámbar | normal → verde
@@ -330,20 +344,21 @@ healthFill.className = 'health-fill'
 
 ```javascript
 async function seedData() {
-  const res = await api('/api/seed', 'POST');
-  if (res.ok) showToast(`🌱 ${res.inserted} partidas demo insertadas`, 'ok');
+  const res = await api("/api/seed", "POST");
+  if (res.ok) showToast(`🌱 ${res.inserted} partidas demo insertadas`, "ok");
 }
 ```
 
 ### Export (descarga JSON)
 
 ```javascript
-const lb = await api('/api/leaderboard?limit=50');
-const st = await api('/api/stats');
+const lb = await api("/api/leaderboard?limit=50");
+const st = await api("/api/stats");
 const blob = new Blob(
   [JSON.stringify({ leaderboard: lb.items, stats: st }, null, 2)],
-  { type: 'application/json' });
-const a = document.createElement('a');
+  { type: "application/json" },
+);
+const a = document.createElement("a");
 a.href = URL.createObjectURL(blob);
 a.download = `voxel_quest_export_${Date.now()}.json`;
 a.click();
@@ -352,11 +367,11 @@ a.click();
 ### Import (input file → POST)
 
 ```javascript
-importFile.addEventListener('change', async () => {
+importFile.addEventListener("change", async () => {
   const text = await file.text();
   const json = JSON.parse(text);
-  const res = await api('/api/import', 'POST', json);
-  if (res.ok) showToast(`📤 ${res.imported} partidas importadas`, 'ok');
+  const res = await api("/api/import", "POST", json);
+  if (res.ok) showToast(`📤 ${res.imported} partidas importadas`, "ok");
 });
 ```
 
@@ -368,53 +383,59 @@ importFile.addEventListener('change', async () => {
 
 ```css
 :root {
-  --bg: #05070f;        --panel: rgba(8,12,25,0.82);
-  --ok: #2de38d;        --info: #5bd7ff;
-  --warning: #ffc145;   --danger: #ff6a6a;
-  --accent: #6078ff;    --gold: #ffd700;
-  --r-sm: 8px; --r-md: 12px; --r-lg: 14px;
-  --shadow-panel: 0 12px 30px rgba(0,0,0,0.35);
+  --bg: #05070f;
+  --panel: rgba(8, 12, 25, 0.82);
+  --ok: #2de38d;
+  --info: #5bd7ff;
+  --warning: #ffc145;
+  --danger: #ff6a6a;
+  --accent: #6078ff;
+  --gold: #ffd700;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --shadow-panel: 0 12px 30px rgba(0, 0, 0, 0.35);
   --font: Inter, -apple-system, sans-serif;
-  --t-fast: 150ms cubic-bezier(0.4,0,0.2,1);
+  --t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 ```
 
 ### Animaciones (6 @keyframes)
 
-| Nombre | Uso | Duración |
-|--------|-----|----------|
-| `fadeIn` | Aparición de paneles | 0.4s |
-| `scaleIn` | Cards de overlay y KPI | 0.35s |
-| `toastUp` | Notificaciones toast | 2.4s |
-| `comboFloat` | Texto `×N COMBO` flotante | 1.2s |
-| `pulse` | Barra de vida en danger | 0.8s infinite |
-| `shake` | Efecto de temblor | — |
+| Nombre       | Uso                       | Duración      |
+| ------------ | ------------------------- | ------------- |
+| `fadeIn`     | Aparición de paneles      | 0.4s          |
+| `scaleIn`    | Cards de overlay y KPI    | 0.35s         |
+| `toastUp`    | Notificaciones toast      | 2.4s          |
+| `comboFloat` | Texto `×N COMBO` flotante | 1.2s          |
+| `pulse`      | Barra de vida en danger   | 0.8s infinite |
+| `shake`      | Efecto de temblor         | —             |
 
 ### Responsive (3 breakpoints)
 
-| Breakpoint | Cambios |
-|-----------|---------|
-| `≤ 1000px` | Panel derecho: 320px; ek-grid gap: 8px |
-| `≤ 760px` | Panel derecho: oculto; HUD: 92vw centrado |
-| `≤ 480px` | HUD padding: 8px; grid 1fr 1fr; ek-grid 1 columna |
+| Breakpoint | Cambios                                           |
+| ---------- | ------------------------------------------------- |
+| `≤ 1000px` | Panel derecho: 320px; ek-grid gap: 8px            |
+| `≤ 760px`  | Panel derecho: oculto; HUD: 92vw centrado         |
+| `≤ 480px`  | HUD padding: 8px; grid 1fr 1fr; ek-grid 1 columna |
 
 ---
 
 ## 14 · Resumen de las 14 mejoras v2
 
-| # | Mejora | Clave técnica |
-|---|--------|---------------|
-| 1 | Tokens CSS | 30+ custom properties en `:root` |
-| 2 | Barra de salud | `.health-fill` + clases warning/danger dinámicas |
-| 3 | Flash de daño | `#damageFlash` radial-gradient + classList toggle |
-| 4 | Combo flotante | `void offsetWidth` reflow + comboFloat keyframe |
-| 5 | Toasts contextuales | `animationend` auto-remove, 4 variantes de color |
-| 6 | KPIs de objetivo | `.obj-kpi.done` → color verde al completar |
-| 7 | KPI cards fin | `.ek-grid` 2×2 con animation-delay escalonado |
-| 8 | Rank badges | `.rank-badge.gold/silver/bronze` en top 3 |
-| 9 | Result badges | `.result-badge.victory/defeat` en historial |
-| 10 | Seed demo | `/api/seed` + SEED_NAMES + randint para stats |
-| 11 | Exportar JSON | `Blob` + `URL.createObjectURL` + `a.click()` |
-| 12 | Importar JSON | `<input type="file">` + `file.text()` + POST |
-| 13 | Responsive | 3 media queries (1000/760/480 px) |
-| 14 | Animaciones | 6 @keyframes en CSS puro |
+| #   | Mejora              | Clave técnica                                     |
+| --- | ------------------- | ------------------------------------------------- |
+| 1   | Tokens CSS          | 30+ custom properties en `:root`                  |
+| 2   | Barra de salud      | `.health-fill` + clases warning/danger dinámicas  |
+| 3   | Flash de daño       | `#damageFlash` radial-gradient + classList toggle |
+| 4   | Combo flotante      | `void offsetWidth` reflow + comboFloat keyframe   |
+| 5   | Toasts contextuales | `animationend` auto-remove, 4 variantes de color  |
+| 6   | KPIs de objetivo    | `.obj-kpi.done` → color verde al completar        |
+| 7   | KPI cards fin       | `.ek-grid` 2×2 con animation-delay escalonado     |
+| 8   | Rank badges         | `.rank-badge.gold/silver/bronze` en top 3         |
+| 9   | Result badges       | `.result-badge.victory/defeat` en historial       |
+| 10  | Seed demo           | `/api/seed` + SEED_NAMES + randint para stats     |
+| 11  | Exportar JSON       | `Blob` + `URL.createObjectURL` + `a.click()`      |
+| 12  | Importar JSON       | `<input type="file">` + `file.text()` + POST      |
+| 13  | Responsive          | 3 media queries (1000/760/480 px)                 |
+| 14  | Animaciones         | 6 @keyframes en CSS puro                          |
